@@ -26,25 +26,41 @@ function meu_plugin_personalizado_menu() {
     );
 }
 
-// Função para exibir a página de configurações
+// Função para exibir a página de configurações para gerenciar múltiplas frases
 function meu_plugin_personalizado_opcoes() {
+    // Verifique a permissão do usuário
     if (!current_user_can('manage_options')) {
         wp_die('Você não tem permissão suficiente para acessar esta página.');
     }
+
+    // Lógica para adicionar novas frases
+    if (isset($_POST['meu_plugin_nova_frase']) && check_admin_referer('meu_plugin_nova_frase_adicionar', 'meu_plugin_nova_frase_verificar')) {
+        $frases = get_option('meu_plugin_personalizado_texto', array());
+        $frases[] = sanitize_text_field($_POST['meu_plugin_nova_frase']);
+        update_option('meu_plugin_personalizado_texto', $frases);
+    }
+
+    // Recupere as frases salvas
+    $frases = get_option('meu_plugin_personalizado_texto', array());
     ?>
     <div class="wrap">
         <h2>Meu Plugin Personalizado</h2>
-        <form method="post" action="options.php">
-            <?php settings_fields('meu-plugin-personalizado-opcoes'); ?>
-            <?php do_settings_sections('meu-plugin-personalizado'); ?>
+        <form method="post">
+            <?php wp_nonce_field('meu_plugin_nova_frase_adicionar', 'meu_plugin_nova_frase_verificar'); ?>
             <table class="form-table">
                 <tr valign="top">
-                <th scope="row">Texto Personalizado:</th>
-                <td><input type="text" name="meu_plugin_personalizado_texto" value="<?php echo esc_attr(get_option('meu_plugin_personalizado_texto')); ?>" /></td>
+                    <th scope="row">Adicionar Nova Frase:</th>
+                    <td><input type="text" name="meu_plugin_nova_frase" value="" /></td>
                 </tr>
             </table>
-            <?php submit_button(); ?>
+            <?php submit_button('Adicionar Frase'); ?>
         </form>
+        <h3>Frases Salvas</h3>
+        <ul>
+            <?php foreach ($frases as $frase) {
+                echo '<li>' . esc_html($frase) . '</li>';
+            } ?>
+        </ul>
     </div>
     <?php
 }
@@ -56,8 +72,52 @@ function meu_plugin_personalizado_registrar_configuracao() {
     register_setting('meu-plugin-personalizado-opcoes', 'meu_plugin_personalizado_texto');
 }
 
-function meu_plugin_personalizado_adicionar_texto($content) {
+/*function meu_plugin_personalizado_adicionar_texto($content) {
     $texto_personalizado = get_option('meu_plugin_personalizado_texto', 'Texto adicionado pelo Meu Plugin Personalizado!!!');
     return $content . '<p>' . esc_html($texto_personalizado) . '</p>';
+}
+add_filter('the_content', 'meu_plugin_personalizado_adicionar_texto');*/
+
+// Adiciona a meta box
+add_action('add_meta_boxes', 'meu_plugin_adicionar_meta_box');
+function meu_plugin_adicionar_meta_box() {
+    add_meta_box('meu-plugin-meta-box', 'Selecionar Frase Personalizada', 'meu_plugin_mostrar_meta_box', 'post', 'side', 'high');
+}
+
+// Mostra a meta box
+function meu_plugin_mostrar_meta_box($post) {
+    $frases = get_option('meu_plugin_personalizado_texto', array());
+    $selecao = get_post_meta($post->ID, '_meu_plugin_frase_selecionada', true);
+
+    // Segurança
+    wp_nonce_field('meu_plugin_salvar_frase', 'meu_plugin_meta_box_nonce');
+
+    echo '<select name="meu_plugin_frase_selecionada">';
+    echo '<option value="">Selecione uma Frase...</option>';
+    foreach ($frases as $frase) {
+        echo '<option value="' . esc_attr($frase) . '"' . selected($selecao, $frase, false) . '>' . esc_html($frase) . '</option>';
+    }
+    echo '</select>';
+}
+
+// Salva a seleção do usuário
+add_action('save_post', 'meu_plugin_salvar_meta_box_dados');
+function meu_plugin_salvar_meta_box_dados($post_id) {
+    if (!isset($_POST['meu_plugin_meta_box_nonce']) || !wp_verify_nonce($_POST['meu_plugin_meta_box_nonce'], 'meu_plugin_salvar_frase')) return;
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+    if (!current_user_can('edit_post', $post_id)) return;
+
+    if (isset($_POST['meu_plugin_frase_selecionada'])) {
+        update_post_meta($post_id, '_meu_plugin_frase_selecionada', sanitize_text_field($_POST['meu_plugin_frase_selecionada']));
+    }
+}
+
+function meu_plugin_personalizado_adicionar_texto($content) {
+    global $post;
+    $frase_selecionada = get_post_meta($post->ID, '_meu_plugin_frase_selecionada', true);
+    if (!empty($frase_selecionada)) {
+        $content .= '<p>' . esc_html($frase_selecionada) . '</p>';
+    }
+    return $content;
 }
 add_filter('the_content', 'meu_plugin_personalizado_adicionar_texto');
