@@ -48,7 +48,7 @@ function meu_plugin_personalizado_opcoes() {
                             <th scope="row">Editar Texto:</th>
                             <td>
                                 <?php
-                                $content = $frases[$edit_index]['texto'];
+                                $content = stripslashes($frases[$edit_index]['texto']);
                                 $editor_id = 'meu_plugin_editar_texto';
                                 $settings = array( 
                                     'textarea_name' => 'meu_plugin_editar_texto', // Importante: precisa ser configurado para o nome do campo
@@ -214,7 +214,7 @@ function meu_plugin_shortcode_frase($atts) {
 
         // Ajuste a formatação conforme necessário
         $content .= '<h3>' . esc_html($frase) . '</h3>';
-        $content .= do_shortcode(stripslashes(wp_kses_post($texto)));
+        $content .= do_shortcode(stripslashes(wp_kses_post(nl2br($texto))));
     }
     return $content;
 }
