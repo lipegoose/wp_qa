@@ -8,6 +8,28 @@ Author: Mr.Goose
 # Author-URI: http://mrgoose.com.br
 # Plugin-URI: http://mrgoose.com.br
 
+// Definindo e inicializando $allowed_html globalmente
+$GLOBALS['allowed_html'] = array(
+    'iframe' => array(
+        'width' => true,
+        'height' => true,
+        'src' => true,
+        'frameborder' => true,
+        'allow' => true,
+        'allowfullscreen' => true,
+        'title' => true,
+    ),
+    'img' => array(
+        'width' => true,
+        'height' => true,
+        'src' => true,
+        'class' => true,
+        'alt' => true,
+        'title' => true,
+    ),
+    // Adicione outras tags e atributos conforme necessário
+);
+
 // Hook para adicionar a página de configurações
 add_action('admin_menu', 'meu_acordeon_personalizado_menu');
 
@@ -27,6 +49,9 @@ function meu_acordeon_personalizado_opcoes() {
     if (!current_user_can('manage_options')) {
         wp_die('Você não tem permissão suficiente para acessar esta página.');
     }
+
+    // Lista personalizada de tags e atributos permitidos
+    global $allowed_html;
 
     if (isset($_GET['edit'])) {
         $edit_index = intval($_GET['edit']);
@@ -72,9 +97,13 @@ function meu_acordeon_personalizado_opcoes() {
             $itens = get_option('meu_acordeon_personalizado_lista', array());
 
             if (isset($itens[$edit_index])) {
+
+                $texto_limpo = wp_kses($_POST['meu_acordeon_editar_texto'], $allowed_html);
+
                 $itens[$edit_index] = [
                     'frase' => sanitize_text_field($_POST['meu_acordeon_editar_frase']),
-                    'texto' => wp_kses_post($_POST['meu_acordeon_editar_texto'])
+                    // 'texto' => wp_kses_post($_POST['meu_acordeon_editar_texto'])
+                    'texto' => $texto_limpo,
                 ];
                 update_option('meu_acordeon_personalizado_lista', $itens);
                 // Redirecionar de volta para a página de configurações para evitar ressubmissões do formulário
@@ -94,10 +123,13 @@ function meu_acordeon_personalizado_opcoes() {
             if (!is_array($itens))
                 $itens = [];
 
+            $texto_limpo = wp_kses($_POST['meu_acordeon_novo_texto'], $allowed_html);
+
             // Adiciona a nova frase e o novo texto como um array associativo
             $itens[] = [
                 'frase' => sanitize_text_field($_POST['meu_acordeon_nova_frase']),
-                'texto' => wp_kses_post($_POST['meu_acordeon_novo_texto']) // Alterado para wp_kses_post
+                // 'texto' => wp_kses_post($_POST['meu_acordeon_novo_texto']) // Alterado para wp_kses_post
+                'texto' => $texto_limpo
             ];
             update_option('meu_acordeon_personalizado_lista', $itens);
             $_SESSION['meu_acordeon_feedback'] = 'Novo Item do Acordeon criado com sucesso.';
@@ -212,16 +244,19 @@ function meu_acordeon_mostrar_meta_box($post) {
 }
 
 function meu_acordeon_personalizado_shortcode($atts) {
-    global $post;
+    global $post, $allowed_html;
     $content = '';
     $itens = get_option('meu_acordeon_personalizado_lista', array());
     foreach ($itens as $id => $dados) {
         $frase = isset($dados['frase']) ? $dados['frase'] : '';
         $texto = isset($dados['texto']) ? $dados['texto'] : '';
 
+        $texto_limpo = wp_kses($texto, $allowed_html);
+
         // Ajuste a formatação conforme necessário
         $content .= '<h3>' . esc_html($frase) . '</h3>';
-        $content .= do_shortcode(stripslashes(wp_kses_post(nl2br($texto))));
+        // $content .= do_shortcode(stripslashes(wp_kses_post(nl2br($texto))));
+        $content .= do_shortcode(stripslashes(nl2br($texto_limpo)));
     }
     return $content;
 }
