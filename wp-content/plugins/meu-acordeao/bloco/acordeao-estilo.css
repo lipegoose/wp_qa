@@ -1,0 +1,35 @@
+.acordeao-item {
+  background-color: #eee;
+  color: #444;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  transition: background-color 0.4s ease;
+}
+
+.active, .acordeao-item:hover {
+  background-color: #ccc; 
+}
+
+.acordeao-item:after {
+  content: '\002B'; /* Símbolo de "+" */
+  color: #777;
+  float: right;
+  margin-left: 5px;
+}
+
+.active:after {
+  content: "\2212"; /* Símbolo de "-" */
+}
+
+.acordeao-content {
+  padding: 0 18px;
+  background-color: white;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease-out;
+}

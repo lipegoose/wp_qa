@@ -242,11 +242,13 @@ function meu_acordeon_adicionar_meta_box() {
 function meu_acordeon_mostrar_meta_box($post) {
     echo '<p>Use o shortcode [meu_acordeon_personalizado] em seu conteúdo para exibir o seu Acordeon Personalizado.</p>';
 }
-
+/*
 function meu_acordeon_personalizado_shortcode($atts) {
     global $post, $allowed_html;
-    $content = '';
+
+    $content = '<unimed-accordion titulo="" itens="[';
     $itens = get_option('meu_acordeon_personalizado_lista', array());
+    $contentItens = [];
     foreach ($itens as $id => $dados) {
         $frase = isset($dados['frase']) ? $dados['frase'] : '';
         $texto = isset($dados['texto']) ? $dados['texto'] : '';
@@ -254,9 +256,33 @@ function meu_acordeon_personalizado_shortcode($atts) {
         $texto_limpo = wp_kses($texto, $allowed_html);
 
         // Ajuste a formatação conforme necessário
-        $content .= '<h3>' . esc_html($frase) . '</h3>';
+        // $contentItens[] = "{'label': '".esc_html($frase)."', 'tamanhoLabel': '1', 'conteudo': '".do_shortcode(stripslashes(nl2br($texto_limpo)))."'}";
+        $contentItens[] = "{'label': '".esc_html($frase)."', 'tamanhoLabel': '1', 'conteudo': '".$texto_limpo."'}";
+        // $content .= '<h3>' . esc_html($frase) . '</h3>';
         // $content .= do_shortcode(stripslashes(wp_kses_post(nl2br($texto))));
-        $content .= do_shortcode(stripslashes(nl2br($texto_limpo)));
+        // $content .= do_shortcode(stripslashes(nl2br($texto_limpo)));
+    }
+    $content .= implode(",", $contentItens);
+    $content .= ']"></unimed-accordion>';
+    return $content;
+}
+*/
+function meu_acordeon_personalizado_shortcode($atts) {
+    global $post, $allowed_html;
+
+    $content = '';
+    $itens = get_option('meu_acordeon_personalizado_lista', array());
+    $contentItens = [];
+    foreach ($itens as $id => $dados) {
+        $frase = isset($dados['frase']) ? $dados['frase'] : '';
+        $texto = isset($dados['texto']) ? $dados['texto'] : '';
+
+        $texto_limpo = wp_kses($texto, $allowed_html);
+
+        // Ajuste a formatação conforme necessário
+        $content .= '<button class="acordeao-item">' . esc_html($frase) . '</button>';
+        // $content .= do_shortcode(stripslashes(wp_kses_post(nl2br($texto))));
+        $content .= '<div class="acordeao-content">'.do_shortcode(stripslashes(nl2br($texto_limpo))).'</div>';
     }
     return $content;
 }
@@ -268,3 +294,14 @@ function meu_acordeon_iniciar_sessao() {
         session_start();
     }
 }
+
+// Enfileira os estilos e scripts do plugin
+function meu_acordeon_personalizado_scripts() {
+    // Enfileira o CSS
+    wp_enqueue_style('meu-acordeon-personalizado-css', plugins_url('meu-acordeon-personalizado.css', __FILE__));
+
+    // Enfileira o JavaScript
+    wp_enqueue_script('meu-acordeon-personalizado-js', plugins_url('meu-acordeon-personalizado.js', __FILE__), array(), false, true);
+}
+
+add_action('wp_enqueue_scripts', 'meu_acordeon_personalizado_scripts');
