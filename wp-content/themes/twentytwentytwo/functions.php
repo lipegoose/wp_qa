@@ -65,3 +65,12 @@ add_action( 'wp_enqueue_scripts', 'twentytwentytwo_styles' );
 
 // Add block patterns
 require get_template_directory() . '/inc/block-patterns.php';
+
+function desabilitar_blocos_nativos_wp() {
+    wp_enqueue_script(
+        'desabilitar-blocos',
+        get_template_directory_uri() . '/js/desabilitar-blocos.js',
+        array( 'wp-blocks', 'wp-dom-ready', 'wp-edit-post' )
+    );
+}
+add_action( 'enqueue_block_editor_assets', 'desabilitar_blocos_nativos_wp' );
