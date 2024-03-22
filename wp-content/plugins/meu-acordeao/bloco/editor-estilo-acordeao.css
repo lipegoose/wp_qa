@@ -1,10 +1,23 @@
 /* editor-estilo-acordeao.css */
 .acordeao-item {
     /* Estilos específicos do editor */
-    border: 2px solid blue; /* Exemplo para ilustrar */
+    background-color: #eee;
+    color: #444;
+    padding: 18px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 15px;
+    transition: background-color 0.4s ease;
+    border-radius: 20px 20px 0 0;
 }
 
 .acordeao-content {
     /* Outros estilos específicos do editor */
-    background-color: lightgrey; /* Exemplo para ilustrar */
+    padding: 0 18px;
+    background-color: #eff;
+    overflow: hidden;
+    transition: max-height 0.2s ease-out;
+    border: 1px solid #eee;
 }
