@@ -1,0 +1,10 @@
+/* editor-estilo-acordeao.css */
+.acordeao-item {
+    /* Estilos específicos do editor */
+    border: 2px solid blue; /* Exemplo para ilustrar */
+}
+
+.acordeao-content {
+    /* Outros estilos específicos do editor */
+    background-color: lightgrey; /* Exemplo para ilustrar */
+}

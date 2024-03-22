@@ -29,3 +29,13 @@ function meu_acordeao_enqueue_styles() {
     wp_enqueue_style('meu-acordeao-css', plugins_url('bloco/acordeao-estilo.css', __FILE__));
 }
 add_action('wp_enqueue_scripts', 'meu_acordeao_enqueue_styles');
+
+function meu_acordeao_enqueue_editor_assets() {
+    wp_enqueue_style(
+        'meu-acordeao-editor-style', 
+        plugins_url('bloco/editor-estilo-acordeao.css', __FILE__),
+        array(), 
+        '1.0'
+    );
+}
+add_action('enqueue_block_editor_assets', 'meu_acordeao_enqueue_editor_assets');
